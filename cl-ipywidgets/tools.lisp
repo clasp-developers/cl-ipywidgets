@@ -1,7 +1,7 @@
 
-(in-package #:cl-jupyter-widgets)
+(in-package #:cl-ipywidgets)
 
-(defvar *debug-cl-jupyter-widgets* nil)
+(defvar *debug-cl-ipywidgets* nil)
 
 (eval-when (:execute :load-toplevel)
   (setf *debugger-hook*
@@ -135,7 +135,7 @@
 ;;;
 ;;; For debugging in slime
 ;;;
-;;; In the jupyter notebook use (cl-jupyter-widgets::save-context)
+;;; In the jupyter notebook use (cl-ipywidgets::save-context)
 ;;;      That will save the context of that message.
 ;;; Then in slime evaluate (in-context (form))
 
