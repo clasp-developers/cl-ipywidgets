@@ -46,3 +46,11 @@
      do
        (%handle-displayed child))
   (values))
+
+(defclass-widget-register grid-box (Box)
+  ()
+  (:default-initargs
+   :model-name (unicode "GridBoxModel")
+   :view-name (unicode "GridBoxView"))
+  (:metaclass traitlets:traitlet-class))
+  

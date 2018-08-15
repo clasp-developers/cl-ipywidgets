@@ -450,8 +450,11 @@ buffers : list  - A list of binary buffers "
     ;; http://tools.ietf.org/html/rfc6838
     ;; and the currently registered mimetypes at
     ;; http://www.iana.org/assignments/media-types/media-types.xhtml.
-    (let ((data (list (cons "text/plain" "A Jupyter Widget")
-                      (cons "text/html" (%fallback-html self))
+    (let ((plaintext (let ((pt (format nil "~s" self)))
+                       (if (> (length pt) 110)
+                           (concatenate 'string (subseq pt 0 110) "...")
+                           pt)))
+          (data (list (cons "text/plain" plaintext)
                       (cons "application/vnd.jupyter.widget-view+json"
                             (list (cons "version_major" 2)
                                   (cons "version_minor" 0)
@@ -663,18 +666,3 @@ Sends a message to the model in the front-end."
   (register-callback (display-callbacks self) callback :remove remove))
 
 
-(defmethod %fallback-html ((self widget))
-  "<p>Failed to display Jupyter Widget of type <code>{widget_type}</code>.</p>
-<p>
-  If you're reading this message in the Jupyter Notebook or JupyterLab Notebook, it may mean
-  that the widgets JavaScript is still loading. If this message persists, it
-  likely means that the widgets JavaScript library is either not installed or
-  not enabled. See the <a href=\"https://ipywidgets.readthedocs.io/en/stable/user_install.html\">Jupyter
-  Widgets Documentation</a> for setup instructions.
-</p>
-<p>
-  If you're reading this message in another frontend (for example, a static
-  rendering on GitHub or <a href=\"https://nbviewer.jupyter.org/\">NBViewer</a>),
-  it may mean that your frontend doesn't currently support widgets.
-</p>
-")

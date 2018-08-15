@@ -4,17 +4,13 @@
   :author "Kevin Esslinger, Alex Wood, and Christian Schafmeister"
   :license "BSD 2-Clause. See LICENSE."
   :depends-on (:cl-jupyter
-               :closer-mop)
+               :closer-mop
+               :cl-ipykernel)
   :serial t
   :pathname "src"
   :components (
                (:file "packages")
                (:file "tools")
-               (:module ikernel
-                :pathname "ikernel"
-                :serial t
-                :components ((:file "manager")
-                             (:file "comm")))
                (:module iwidgets
                 :pathname "iwidgets"
                 :serial t

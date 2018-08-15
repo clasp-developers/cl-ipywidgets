@@ -21,9 +21,71 @@
    :view-module-version (unicode *jupyter-widgets-output-version*)
    :model-module-version (unicode *jupyter-widgets-output-version*)
    )
-  (:metaclass traitlets:traitlet-class))
+  (:metaclass traitlets:traitlet-class)
+  (:documentation
+   "Widget used as a context manager to display output.
 
-#+or
+    This widget can capture and display stdout, stderr, and rich output.  To use
+    it, create an instance of it and display it.
+
+    You can then use the widget as a context manager: any output produced while in the
+    context will be captured and displayed in the widget instead of the standard output
+    area.
+
+    You can also use the .capture() method to decorate a function or a method. Any output 
+    produced by the function will then go to the output widget. This is useful for
+    debugging widget callbacks, for example.
+
+    Example::
+        import ipywidgets as widgets
+        from IPython.display import display
+        out = widgets.Output()
+        display(out)
+
+        print('prints to output area')
+
+        with out:
+            print('prints to output widget')
+
+        @out.capture()
+        def func():
+            print('prints to output widget')
+    "   ))
+
+
+#|| TODO
+
+    # PY3: Force passing clear_output and clear_kwargs as kwargs
+    def capture(self, clear_output=False, *clear_args, **clear_kwargs):
+        """
+        Decorator to capture the stdout and stderr of a function.
+
+        Parameters
+        ----------
+
+        clear_output: bool
+            If True, clear the content of the output widget at every
+            new function call. Default: False
+
+        wait: bool
+            If True, wait to clear the output until new output is
+            available to replace it. This is only used if clear_output
+            is also True.
+            Default: False
+        """
+        def capture_decorator(func):
+            @wraps(func)
+            def inner(*args, **kwargs):
+                if clear_output:
+                    self.clear_output(*clear_args, **clear_kwargs)
+                with self:
+                    return func(*args, **kwargs)
+            return inner
+        return capture_decorator
+
+
+||#
+#+(or)
 (defmethod %enter ((self output))
   (%flush self)
   (let ((ip (get-ipython)));FIXME: Does this function exist somewhere?
@@ -35,7 +97,7 @@
   (let ((ip (get-ipython)))
     (%flush self)
     (setf (msg-id self) "")
-    t))
+    ip))
 
 
 (defmethod %flush ((self output))

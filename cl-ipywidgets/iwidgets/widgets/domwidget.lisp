@@ -6,18 +6,18 @@
 		 :initform #()
 		 :metadata
 		 (:sync t
-			:json-name "_dom_classes"))
+                  :json-name "_dom_classes"))
    (%layout :initarg :layout :accessor layout
 	    :type (or instance null)
 	    :initform (make-instance 'layout)
 	    :metadata
 	    #.`(:sync t
-		      :json-name "layout"
-		      ,@*widget-serialization*))
+                :json-name "layout"
+                ,@*widget-serialization*))
    )
   (:default-initargs
    :model-name (unicode "DOMWidgetModel")
-    :layout (make-instance 'layout))
+   :layout (make-instance 'layout))
   (:metaclass traitlets:traitlet-class))
 
 

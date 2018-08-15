@@ -1,8 +1,8 @@
 
-(defpackage #:cl-jupyter-widgets
+(defpackage #:cl-ipywidgets
   (:nicknames #:cljw)
   (:use #:cl)
-  (:shadow #:open #:close #:step #:min #:max)
+  (:shadow #:min #:max)
   (:export
    #:*send-updates*
    #:ipython-display
