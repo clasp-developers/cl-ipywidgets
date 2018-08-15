@@ -2,7 +2,7 @@
 (defpackage #:cl-ipywidgets
   (:nicknames #:cljw)
   (:use #:cl)
-  (:shadow #:min #:max)
+  (:shadow #:step #:min #:max)
   (:export
    #:*send-updates*
    #:ipython-display
