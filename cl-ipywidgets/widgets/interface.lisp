@@ -78,9 +78,12 @@
 (defun cl-jupyter-widget-display-hook (widget iopub parent-msg execution-count key)
   (if (and widget (typep widget 'cljw:widget))
       (progn
+	(cl-jupyter:logg 1 "cl-jupyter-widget-display-hook: The widget result ~s is about to be displayed~%" widget)
         (ipython-display widget iopub parent-msg execution-count key)
         t)
-      nil))
+    (progn
+      (cl-jupyter:logg 1 "cl-jupyter-widget-display-hook: Did not recognize ~s as a widget - returning to shell~%" widget)
+      nil)))
 
 (eval-when (:load-toplevel :execute)
   (setf cl-jupyter:*kernel-start-hook* #'kernel-start-hook)

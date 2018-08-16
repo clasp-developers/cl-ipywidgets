@@ -435,7 +435,7 @@ buffers : list  - A list of binary buffers "
 	 :buffers buffers))
 
 (defun ipython-display (widget iopub parent-msg execution-count key)
-  (cl-jupyter:logg 2 "widget::ipython-display  (%ipython-display widget) -> ~a~%" (%ipython-display widget))
+  (cl-jupyter:logg 1 "widget::ipython-display  (%ipython-display widget) -> ~a~%" (%ipython-display widget))
   (if (%ipython-display widget)
       (funcall (%ipython-display widget) widget iopub parent-msg execution-count key)
       (warn "%ipython-display callback is nil for widget ~a" widget)))
