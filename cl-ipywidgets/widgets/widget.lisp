@@ -363,7 +363,8 @@ Return T if equal, NIL if unequal"
     
 
 (defun check-*send-updates* ()
-  (cl-jupyter:logg 2 "In check-*send-updates* -> ~a~%" *send-updates*))
+  (cl-jupyter:logg 2 "In check-*send-updates* *send-updates*-> ~a~%" *send-updates*)
+  *send-updates*)
 
 (defmethod initialize-instance :around ((w widget) &rest initargs)
   (cl-jupyter:logg 2 "widget.lisp initialize-instance initargs: ~a~%" initargs)
@@ -461,11 +462,12 @@ buffers : list  - A list of binary buffers "
 				   (cons "model_id" (model-id self)))))))
       (cl-jupyter:logg 2 "Calling cl-jupyter:display with data -> ~s~%" data)
 ;;; Rather than mimicking 'display(data,raw=True) the way that ipywidgets does
-;;;      as in https://github.com/jupyter-widgets/ipywidgets/blob/master/ipywidgets/widgets/widget.py#L698
+;;;      as in https://github.com/jupyter-widgets/ipywidgets/blob/master/ipywidgets/widgets/widget.py#L722
 ;;; I am going to do what cl-jupyter:display would do - create a cl-jupyter::display-object
 ;;;     and then return that to the caller - that should publish it.
       #+(or)(cl-jupyter:display data #| raw=True ???? |#)
       (let ((display-obj (make-instance 'cl-jupyter::display-object :value self :data data)))
+	(cl-jupyter:logg 2 "Calling cl-jupyter:send-execute-raw-display-object display-obj: ~s key: ~s~%" display-obj key)
         (cl-jupyter:send-execute-raw-display-object iopub parent-msg execution-count display-obj :key key)) 
       (%handle-displayed self))))
 
