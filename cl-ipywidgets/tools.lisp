@@ -128,7 +128,7 @@
     (print-as-python msg sout)))
 
 
-(defgeneric on-msg (target callback &key &allow-other-keys))
+(defgeneric cl-ipykernel:on-msg (target callback &key &allow-other-keys))
 
 
 ;;; ------------------------------------------------------------

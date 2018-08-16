@@ -61,7 +61,7 @@
             
 
 (defmethod initialize-instance :after ((self button) &key)
-  (on-msg self #'%handle-button-msg))
+  (cl-ipykernel:on-msg self #'%handle-button-msg))
 
 ;;;Method for assigning a callback when the user clicks the button
 (defmethod on-click ((self button) callback &key (remove nil))

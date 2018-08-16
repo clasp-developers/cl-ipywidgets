@@ -3,17 +3,17 @@
 
 (defun kernel-start-hook (kernel)
   (cl-jupyter:logg 2 "In kernel-start-hook kernel -> ~a~%" kernel)
-  (let ((comm-manager (make-comm-manager kernel)))
+  (let ((comm-manager (cl-ipykernel:make-comm-manager kernel)))
     (cl-jupyter:logg 2 "Just did make-comm-manager~%")
-    (setf (gethash kernel *kernel-comm-managers*) comm-manager)
+    (setf (gethash kernel cl-ipykernel:*kernel-comm-managers*) comm-manager)
     (cl-jupyter:logg 2 "register-target for kernel: ~a~%" kernel)
-    (register-target comm-manager "jupyter.widget" #'handle-comm-open)))
+    (cl-ipykernel:register-target comm-manager "jupyter.widget" #'handle-comm-open)))
 
 (defun kernel-shutdown-hook (kernel)
   (cl-jupyter:logg 2 "In kernel-shutdown-hook kernel -> ~a~%" kernel)
-  (let ((comm-manager (gethash kernel *kernel-comm-managers*)))
+  (let ((comm-manager (gethash kernel cl-ipykernel:*kernel-comm-managers*)))
     (if comm-manager
-        (remhash kernel *kernel-comm-managers*)
+        (remhash kernel cl-ipykernel:*kernel-comm-managers*)
         (warn "The kernel ~a was shutdown but no comm-manager could be found for it" kernel))))
 
 (defun handle-comm-open (shell identities msg)
@@ -25,10 +25,10 @@
          (cl-jupyter:logg 2 "[Shell] Parsing message~%")
          (cl-jupyter:logg 2 "  ==> msg = ~W~%" msg)
          (let* ((kernel (cl-jupyter::shell-kernel shell))
-                (manager (gethash kernel *kernel-comm-managers*)))
+                (manager (gethash kernel cl-ipykernel:*kernel-comm-managers*)))
            ;; Should I pass identities for ident??????
            ;; I have no idea what the stream is
-           (comm-open manager :I-dont-know-what-to-pass-for-stream :i-dont-know-what-to-pass-for-ident msg)))
+           (cl-ipykernel:comm-open manager :I-dont-know-what-to-pass-for-stream :i-dont-know-what-to-pass-for-ident msg)))
     (cl-jupyter:logg 2 "    Unwound after parse-json-from-string or comm-open~%"))
   ;; status back to idle
   (cl-jupyter::send-status-update (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)) msg "idle" :key (cl-jupyter::kernel-key shell)))
@@ -42,10 +42,10 @@
          (cl-jupyter:logg 2 "[Shell/handle-comm-msg] Parsing message~%")
          (cl-jupyter:logg 2 "  ==> msg = ~W~%" msg)
          (let* ((kernel (cl-jupyter::shell-kernel shell))
-                (manager (gethash kernel *kernel-comm-managers*)))
+                (manager (gethash kernel cl-ipykernel:*kernel-comm-managers*)))
            ;; Should I pass identities for ident??????
            ;; I have no idea what the stream is
-           (comm-msg manager :I-dont-know-what-to-pass-for-stream :i-dont-know-what-to-pass-for-ident msg)))
+           (cl-ipykernel:comm-msg manager :I-dont-know-what-to-pass-for-stream :i-dont-know-what-to-pass-for-ident msg)))
     (cl-jupyter:logg 2 "[Shell/handle-comm-msg]    Unwound stack after parse-json-from-string or comm-msg~%"))
   ;; status back to idle
   (cl-jupyter::send-status-update (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)) msg "idle" :key (cl-jupyter::kernel-key shell)))
@@ -59,10 +59,10 @@
          (cl-jupyter:logg 2 "[Shell] Parsing message~%")
          (cl-jupyter:logg 2 "  ==> msg = ~W~%" msg)
          (let* ((kernel (cl-jupyter::shell-kernel shell))
-                (manager (gethash kernel *kernel-comm-managers*)))
+                (manager (gethash kernel cl-ipykernel:*kernel-comm-managers*)))
            ;; Should I pass identities for ident??????
            ;; I have no idea what the stream is
-           (comm-close manager :I-dont-know-what-to-pass-for-stream :i-dont-know-what-to-pass-for-ident msg)))
+           (cl-ipykernel:comm-close manager :I-dont-know-what-to-pass-for-stream :i-dont-know-what-to-pass-for-ident msg)))
     (cl-jupyter:logg 2 "    Unwinding after parse-json-from-string or comm-close~%"))
   ;; status back to idle
   (cl-jupyter::send-status-update (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)) msg "idle" :key (cl-jupyter::kernel-key shell)))

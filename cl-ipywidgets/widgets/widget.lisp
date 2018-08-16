@@ -328,13 +328,13 @@ Return T if equal, NIL if unequal"
 
 ;;; observe('comm')
 (defmethod (setf comm) :after (comm (widg widget))
-  (setf (model-id widg) (comm-id comm))
-  (on-msg comm (lambda (msg) (funcall '%handle-msg widg msg)))
+  (setf (model-id widg) (cl-ipykernel:comm-id comm))
+  (cl-ipykernel:on-msg comm (lambda (msg) (funcall '%handle-msg widg msg)))
   (setf (gethash (model-id widg) *widget.widgets*) widg))
 
 (defmethod model-id ((widg widget))
   (if (comm widg)
-      (comm-id (comm widg))))
+      (cl-ipykernel:comm-id (comm widg))))
 
 (defmethod widget-close ((self widget))
   (when (comm self)
@@ -398,7 +398,7 @@ Return T if equal, NIL if unequal"
 )))
       (when (model-id self)
 	(setf (getf kwargs :comm-id) (model-id self)))
-      (setf (comm self) (apply #'comm.__init__ kwargs))
+      (setf (comm self) (apply #'cl-ipykernel:comm.__init__ kwargs))
       (cl-jupyter:logg 2 "    creating comm -> ~s~%" (comm self)))))
 
 (defun binary-types-p (obj)
@@ -450,15 +450,15 @@ buffers : list  - A list of binary buffers "
     ;; http://tools.ietf.org/html/rfc6838
     ;; and the currently registered mimetypes at
     ;; http://www.iana.org/assignments/media-types/media-types.xhtml.
-    (let ((plaintext (let ((pt (format nil "~s" self)))
-                       (if (> (length pt) 110)
-                           (concatenate 'string (subseq pt 0 110) "...")
-                           pt)))
-          (data (list (cons "text/plain" plaintext)
-                      (cons "application/vnd.jupyter.widget-view+json"
-                            (list (cons "version_major" 2)
-                                  (cons "version_minor" 0)
-                                  (cons "model_id" (model-id self)))))))
+    (let* ((plaintext (let ((pt (format nil "~s" self)))
+			(if (> (length pt) 110)
+			    (concatenate 'string (subseq pt 0 110) "...")
+			  pt)))
+	   (data (list (cons "text/plain" plaintext)
+		       (cons "application/vnd.jupyter.widget-view+json"
+			     (list (cons "version_major" 2)
+				   (cons "version_minor" 0)
+				   (cons "model_id" (model-id self)))))))
       (cl-jupyter:logg 2 "Calling cl-jupyter:display with data -> ~s~%" data)
 ;;; Rather than mimicking 'display(data,raw=True) the way that ipywidgets does
 ;;;      as in https://github.com/jupyter-widgets/ipywidgets/blob/master/ipywidgets/widgets/widget.py#L698
@@ -639,7 +639,7 @@ Sends a message to the model in the front-end."
   (send (comm self) :data msg :buffers buffers))
 
 
-(defmethod on-msg ((self widget) callback &key remove)
+(defmethod cl-ipykernel:on-msg ((self widget) callback &key remove)
     "(Un)Register a custom msg receive callback.
 
         Parameters
