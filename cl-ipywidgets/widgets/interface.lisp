@@ -45,7 +45,7 @@
                 (manager (gethash kernel cl-ipykernel:*kernel-comm-managers*)))
            ;; Should I pass identities for ident??????
            ;; I have no idea what the stream is
-           (cl-ipykernel:comm-msg manager :I-dont-know-what-to-pass-for-stream :i-dont-know-what-to-pass-for-ident msg)))
+           (cl-ipykernel:comm-msg manager :I-dont-know-what-to-pass-for-stream identities msg)))
     (cl-jupyter:logg 2 "[Shell/handle-comm-msg]    Unwound stack after parse-json-from-string or comm-msg~%"))
   ;; status back to idle
   (cl-jupyter::send-status-update (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)) msg "idle" :key (cl-jupyter::kernel-key shell)))
@@ -94,49 +94,6 @@
   (setf cl-jupyter:*cl-jupyter-widget-display-hook* #'cl-jupyter-widget-display-hook)
   (setf cl-jupyter:*sort-encoded-json* nil))
 
-(defun session-send (session
-                     stream
-                     msg-or-type
-                     &key content parent ident (buffers #()) track header metadata)
-  (check-type buffers array)
-  (progn
-    (cl-jupyter:logg 2 "---------------send-comm-message~%")
-    (cl-jupyter:logg 2 "         session  -> ~s~%" session)
-    (cl-jupyter:logg 2 "stream(or socket) -> ~s~%" stream)
-    (cl-jupyter:logg 2 "      msg-or-type -> ~s~%" msg-or-type)
-    (cl-jupyter:logg 2 "          content -> ~s~%" content)
-    (cl-jupyter:logg 2 "           parent -> ~s~%" parent)
-    (cl-jupyter:logg 2 "           (message-header parent) -> ~s~%" (cl-jupyter:message-header parent))
-    (cl-jupyter:logg 2 "                  (header-msg-type (message-header parent)) -> ~s~%" (cl-jupyter::header-msg-type (cl-jupyter::message-header parent)))
-    (cl-jupyter:logg 2 "            ident -> ~s~%" ident)
-    (cl-jupyter:logg 2 " (length buffers) -> ~s~%" (length buffers))
-    (cl-jupyter:logg 2 "            track -> ~s~%" track)
-    (cl-jupyter:logg 2 "           header -> ~s~%" header)
-    (cl-jupyter:logg 2 "         metadata -> ~s~%" metadata))
-  (let ((track (streamp stream))
-        msg msg-type)
-    (if (typep msg-or-type '(or cl-jupyter::message list))
-        (setf msg msg-or-type
-              buffers (cond
-                        (buffers buffers)
-                        ((typep msg-or-type cl-jupyter:message)
-                         (cl-jupyter:message-buffers msg-or-type))
-                        (t (error "How do I get buffers out of the object ~s" msg-or-type)))
-              msg-type (cl-jupyter::header-msg-type (cl-jupyter:message-header parent)))
-        (setf msg (cl-jupyter::make-message parent msg-or-type metadata content buffers)
-              msg-type msg-or-type)
-        )
-    (progn
-      (cl-jupyter:logg 2 "          msg -> ~s~%" msg)
-      (cl-jupyter:logg 2 "          msg-type -> ~s~%" msg-type))
-;;; Check the PID  and compare to os.getpid - warn if sending message from fork and return
-    ;; buffers = [] if buffers is None else buffers
-    ;; ensure that buffers support memoryview buffer protocol
-    (prog1
-        (let ((socket (cl-jupyter::iopub-socket stream)))
-          (cl-jupyter:logg 2 "About to do message-send msg=|~s|~%" msg)
-          (cl-jupyter::message-send socket msg :identities (list msg-type) :key (cl-jupyter::kernel-key cl-jupyter::*shell*)))
-      (cl-jupyter:logg 2 "Done with message-send~%"))))
 
 
 #|
