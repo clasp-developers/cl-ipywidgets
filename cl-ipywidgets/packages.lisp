@@ -67,6 +67,8 @@
    #:textarea
    #:text
    #:password
+   #:save-jupyter-cell-state
+   #:in-jupyter-cell
    )
   (:import-from :fredokun-utilities #:[] #:[]-contains))
 
