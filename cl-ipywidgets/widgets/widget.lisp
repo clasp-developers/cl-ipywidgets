@@ -638,7 +638,7 @@ buffers : list  - A list of binary buffers "
 See: https://github.com/drmeister/spy-ipykernel/blob/master/ipywidgets/widgets/widget.py#L485
 Sends a message to the model in the front-end."
   (check-type buffers array)
-  (send (comm self) :data msg :buffers buffers))
+  (cl-ipykernel:send (comm self) :data msg :buffers buffers))
 
 
 (defmethod cl-ipykernel:on-msg ((self widget) callback &key remove)
