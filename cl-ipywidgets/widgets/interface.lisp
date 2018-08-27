@@ -18,54 +18,54 @@
 
 (defun handle-comm-open (shell identities msg)
   (cl-jupyter:logg 2 "[Shell] handling 'comm_open' - parsing message~%")
-  (cl-jupyter::send-status-update (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)) msg "busy" :key (cl-jupyter::kernel-key shell))'
+  (cl-jupyter:send-status-update (cl-jupyter:kernel-iopub (cl-jupyter:kernel shell)) msg "busy" :key (cl-jupyter:kernel-key shell))'
   (cl-jupyter:logg 2 "[Shell] done sending busy~%")
   (unwind-protect
        (progn
          (cl-jupyter:logg 2 "[Shell] Parsing message~%")
          (cl-jupyter:logg 2 "  ==> msg = ~W~%" msg)
-         (let* ((kernel (cl-jupyter::shell-kernel shell))
+         (let* ((kernel (cl-jupyter:kernel shell))
                 (manager (gethash kernel cl-ipykernel:*kernel-comm-managers*)))
            ;; Should I pass identities for ident??????
            ;; I have no idea what the stream is
            (cl-ipykernel:comm-open manager :I-dont-know-what-to-pass-for-stream :i-dont-know-what-to-pass-for-ident msg)))
     (cl-jupyter:logg 2 "    Unwound after parse-json-from-string or comm-open~%"))
   ;; status back to idle
-  (cl-jupyter::send-status-update (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)) msg "idle" :key (cl-jupyter::kernel-key shell)))
+  (cl-jupyter:send-status-update (cl-jupyter:kernel-iopub (cl-jupyter:kernel shell)) msg "idle" :key (cl-jupyter:kernel-key shell)))
 
 (defun handle-comm-msg (shell identities msg)
   (cl-jupyter:logg 2 "[Shell/handle-comm-msg] handling 'comm_msg' - parsing message~%")
-  (cl-jupyter::send-status-update (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)) msg "busy" :key (cl-jupyter::kernel-key shell))'
+  (cl-jupyter:send-status-update (cl-jupyter:kernel-iopub (cl-jupyter:kernel shell)) msg "busy" :key (cl-jupyter:kernel-key shell))'
   (cl-jupyter:logg 2 "[Shell/handle-comm-msg] done sending busy~%")
   (unwind-protect
        (progn
          (cl-jupyter:logg 2 "[Shell/handle-comm-msg] Parsing message~%")
          (cl-jupyter:logg 2 "  ==> msg = ~W~%" msg)
-         (let* ((kernel (cl-jupyter::shell-kernel shell))
+         (let* ((kernel (cl-jupyter:kernel shell))
                 (manager (gethash kernel cl-ipykernel:*kernel-comm-managers*)))
            ;; Should I pass identities for ident??????
            ;; I have no idea what the stream is
            (cl-ipykernel:comm-msg manager :I-dont-know-what-to-pass-for-stream identities msg)))
     (cl-jupyter:logg 2 "[Shell/handle-comm-msg]    Unwound stack after parse-json-from-string or comm-msg~%"))
   ;; status back to idle
-  (cl-jupyter::send-status-update (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)) msg "idle" :key (cl-jupyter::kernel-key shell)))
+  (cl-jupyter:send-status-update (cl-jupyter:kernel-iopub (cl-jupyter:kernel shell)) msg "idle" :key (cl-jupyter:kernel-key shell)))
 
 (defun handle-comm-close (shell identities msg)
   (cl-jupyter:logg 2 "[Shell] handling 'comm_close' - parsing message~%")
-  (cl-jupyter::send-status-update (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)) msg "busy" :key (cl-jupyter::kernel-key shell))'
+  (cl-jupyter:send-status-update (cl-jupyter:kernel-iopub (cl-jupyter:kernel shell)) msg "busy" :key (cl-jupyter:kernel-key shell))'
   (cl-jupyter:logg 2 "[Shell] done sending busy~%")
   (unwind-protect
        (progn
          (cl-jupyter:logg 2 "[Shell] Parsing message~%")
          (cl-jupyter:logg 2 "  ==> msg = ~W~%" msg)
-         (let* ((kernel (cl-jupyter::shell-kernel shell))
+         (let* ((kernel (cl-jupyter:kernel shell))
                 (manager (gethash kernel cl-ipykernel:*kernel-comm-managers*)))
            ;; Should I pass identities for ident??????
            ;; I have no idea what the stream is
            (cl-ipykernel:comm-close manager :I-dont-know-what-to-pass-for-stream :i-dont-know-what-to-pass-for-ident msg)))
     (cl-jupyter:logg 2 "    Unwinding after parse-json-from-string or comm-close~%"))
   ;; status back to idle
-  (cl-jupyter::send-status-update (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)) msg "idle" :key (cl-jupyter::kernel-key shell)))
+  (cl-jupyter:send-status-update (cl-jupyter:kernel-iopub (cl-jupyter:kernel shell)) msg "idle" :key (cl-jupyter:kernel-key shell)))
 
 
 ;;; Carries out the action of load_ipython_extension
@@ -196,22 +196,22 @@
 |#
 
 (defun send-comm-open (content)
-  (let* ((msg (cl-jupyter::make-message cl-jupyter::*parent-msg* "comm_open" nil content))
-         (shell cl-jupyter::*shell*))
+  (let* ((msg (cl-jupyter:make-message cl-jupyter:*parent-msg* "comm_open" nil content))
+         (shell cl-jupyter:*shell*))
     #++(let ((json-str (encode-json-to-string content :indent 4)))
       (cl-jupyter:logg 2 "Sending comm_open~%")
       (cl-jupyter:logg 2 "parent-msg -> ~s~%" *parent-msg*)
       (cl-jupyter:logg 2 "content:   ~s~%" content)
       (cl-jupyter:logg 2 "json:  ---> ~%")
       (cl-jupyter:logg 2 "~s~%" json-str))
-    (cl-jupyter::message-send
-     (cl-jupyter::iopub-socket (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)))
+    (cl-jupyter:message-send
+     (cl-jupyter:kernel-iopub (cl-jupyter:kernel shell))
      msg
      :identities '("comm_open")
-     :key (cl-jupyter::kernel-key shell))))
+     :key (cl-jupyter:kernel-key shell))))
 
 (defun send-comm-msg (content)
-  (let* ((msg (cl-jupyter::make-message cl-jupyter:*parent-msg* "comm_msg" nil content))
+  (let* ((msg (cl-jupyter:make-message cl-jupyter:*parent-msg* "comm_msg" nil content))
          (shell cl-jupyter:*shell*))
     #++(let ((json-str (encode-json-to-string content :indent 4)))
       (cl-jupyter:logg 2 "Sending comm_msg~%")
@@ -219,8 +219,8 @@
       (cl-jupyter:logg 2 "content:   ~s~%" content)
       (cl-jupyter:logg 2 "json:  ---> ~%")
       (cl-jupyter:logg 2 "~s~%" json-str))
-    (cl-jupyter::message-send
-     (cl-jupyter::iopub-socket (cl-jupyter::kernel-iopub (cl-jupyter::shell-kernel shell)))
+    (cl-jupyter:message-send
+     (cl-jupyter:kernel-iopub (cl-jupyter:kernel shell))
      msg
      :identities '("comm_msg")
-     :key (cl-jupyter::kernel-key shell))))
+     :key (cl-jupyter:kernel-key shell))))
