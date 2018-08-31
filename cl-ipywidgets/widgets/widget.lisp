@@ -23,6 +23,7 @@
 	(t x)))
 
 (defun json-to-widget (x obj)
+  (WARN "json-to-widget is being called - it may have bugs")
   (cond ((hash-table-p x)
 	 (loop for key being the hash-keys of x
 	    using (hash-value value)
@@ -356,7 +357,7 @@ Return T if equal, NIL if unequal"
 
 (defun get-key-map (object)
   (loop for slot-def in (closer-mop:class-slots (class-of object))
-     when (eq (closer-mop:slot-definition-allocation slot-def) :instance)
+;;;     when (eq (closer-mop:slot-definition-allocation slot-def) :instance)
      when (getf (traitlets::metadata slot-def) :sync)
      collect (cons (closer-mop:slot-definition-name slot-def)
 		   (getf (traitlets::metadata slot-def) :json-name))))
