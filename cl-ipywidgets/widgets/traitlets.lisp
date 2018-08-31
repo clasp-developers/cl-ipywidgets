@@ -86,7 +86,12 @@
 	 (_ (unless (closer-mop:class-finalized-p class)
 	      (closer-mop:finalize-inheritance class)))
 	 (slots (closer-mop:class-slots class))
-	 (slot (or (find slot-name slots :key #'closer-mop:slot-definition-name)
+	 (slot (or (cond
+                     ((stringp slot-name)
+                      (find slot-name slots :key (lambda (slot) (getf (metadata slot) :json-name)) :test 'string=))
+                     ((symbolp slot-name)
+                      (find slot-name slots :key #'closer-mop:slot-definition-name))
+                     (t (error 'type-error slot-name '(or string symbol))))
 		   (error "slot missing in class ~a: ~a" class slot-name)))
 	 (md (metadata slot)))
     (declare (ignore _))
