@@ -12,6 +12,7 @@
    #:widget-close
    #:domwidget
    #:int-slider
+   #:layout
    #:image
    #:bool
    #:dict
