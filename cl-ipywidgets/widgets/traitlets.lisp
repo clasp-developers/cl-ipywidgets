@@ -145,16 +145,15 @@
   ((%mutex :initform (bordeaux-threads:make-lock) :accessor mutex))
   (:metaclass traitlet-class))
 
-#++
-(defmethod (setf closer-mop:slot-value-using-class) (val (class traitlet-class) self (slotd effective-traitlet))
-  (if (slot-boundp slotd 'validator)
-      (progn
-	(cl-jupyter:logg 2 "About to call validator and then set the slot: ~s~%" slotd)
-	(call-next-method
-	 (funcall (coerce (validator slotd) 'function) self val)
-	 class self slotd))
-      (call-next-method)))
 
+(defmethod notify-change ((synced-object synced-object) slotd new-value old)
+  (loop for observer in (observers slotd)
+        do (cl-jupyter:logg 2 "Calling observer ~s~%" observer)
+           (funcall (coerce observer 'function)
+                    synced-object (clos:slot-definition-name slotd) new-value old)))
+
+
+#+(or)
 (defmethod (setf closer-mop:slot-value-using-class) :before
     (new-value (class traitlet-class) object (slotd effective-traitlet))
   (when (closer-mop:slot-boundp-using-class class object slotd)
@@ -186,8 +185,8 @@
   #++(cl-jupyter:logg 2 "Process: ~a READING slot -> ~s  (getf (metadata slotd) :sync) -> ~a~%" mp:*current-process* slotd (getf (metadata slotd) :sync))
   (if (getf (metadata slotd) :sync)
       (progn
-	(cl-jupyter:logg 2 " About to with-shared-lock~%")
-	(with-shared-lock (mutex object) (call-next-method)))
+        (cl-jupyter:logg 2 " About to with-shared-lock~%")
+        (with-shared-lock (mutex object) (call-next-method)))
       (call-next-method)))
 
 #++(defmethod (setf closer-mop:slot-value-using-class)
@@ -202,11 +201,17 @@
 (defmethod (setf closer-mop:slot-value-using-class)
     (new-value (class traitlet-class) (object synced-object) (slotd effective-traitlet))
   #++(cl-jupyter:logg 2 "Process: ~a WRITING slot -> ~s (getf (metadata slotd) :sync) -> ~s~%" mp:*current-process* slotd (getf (metadata slotd) :sync))
-  (if (getf (metadata slotd) :sync)
-      (if (slot-boundp slotd 'validator)
-	  (progn
-	    (cl-jupyter:logg 2 "About to call validator and then set the slot: ~s~%" slotd)
-	    (let ((validated-value (funcall (coerce (validator slotd) 'function) object new-value)))
-	      (with-write-lock (mutex object) (call-next-method validated-value class object slotd))))
-	  (call-next-method))
-      (call-next-method)))
+  (flet ((do-setf ()
+           (if (getf (metadata slotd) :sync)
+               (if (slot-boundp slotd 'validator)
+	           (progn
+	             (cl-jupyter:logg 2 "About to call validator and then set the slot: ~s~%" slotd)
+	             (let ((validated-value (funcall (coerce (validator slotd) 'function) object new-value)))
+	               (with-write-lock (mutex object) (call-next-method validated-value class object slotd))))
+	           (call-next-method))
+               (call-next-method))))
+    (if (slot-boundp object (clos:slot-definition-name slotd))
+        (let ((old (closer-mop:slot-value-using-class class object slotd)))
+          (do-setf)
+          (notify-change object slotd new-value old))
+        (do-setf))))

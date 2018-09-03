@@ -477,30 +477,33 @@ buffers : list  - A list of binary buffers "
   (cl-jupyter:logg 2 "In %handle-msg~%")
   (let* ((content (cl-ipykernel:extract-message-content msg))
 	 (_ (cl-jupyter:logg 2 "     content -> ~s~%" content))
-	 (data    (fredo-utils:[] content "data"))
-	 (method  (fredo-utils:[] data "method"))
+	 (data    ([] content "data"))
+	 (method  ([] data "method" :not-found))
          state)
+    (when (eq method :not-found)
+      (error "An empty data dict was received from Python - why???? content is ~s"
+             content))
     (cond
       ((string= method "update")
        (cl-jupyter:logg 2 "method update  data -> ~S~%" data)
-       (when (fredo-utils:[]-contains  data "state")
-         (let ((state (fredo-utils:[] data "state")))
+       (when ([]-contains  data "state")
+         (let ((state ([] data "state")))
            (cl-jupyter:logg 2 "Found state ~s in data~%" state)
-           (when (fredo-utils:[]-contains data "buffer_paths")
-             (let ((buffer-paths (fredo-utils:[] data "buffer_paths" #())))
+           (when ([]-contains data "buffer_paths")
+             (let ((buffer-paths ([] data "buffer_paths" #())))
                (cl-jupyter:logg 2 "Found buffer_paths ~s in data~%" buffer-paths)
-               (%put-buffers state (fredo-utils:[] data "buffer_paths")
-                             (fredo-utils:[] content "buffers" #()))))
+               (%put-buffers state ([] data "buffer_paths")
+                             ([] content "buffers" #()))))
            (set-state self state))))
       ((string= method "request_state")
        (cl-jupyter:logg 2 "method request_state~%")
        (send-state self))
       ((string= method "custom")
        (cl-jupyter:logg 2 "method custom   data -> ~s~%" data)
-       (when (fredo-utils:[]-contains data "content")
+       (when ([]-contains data "content")
 	 (cl-jupyter:logg 2 "About to call handle-custom-msg~%")
 	 (handle-custom-msg self
-			    (fredo-utils:[] data "content")
+			    ([] data "content")
 			    (cl-jupyter:message-buffers msg))))
       (t (cl-jupyter:logg 2 "method unknown!!~%")
 	 (log-error "Unknown front-end to back-end widget msg with method ~a" method)))))
@@ -669,3 +672,12 @@ Sends a message to the model in the front-end."
   (register-callback (display-callbacks self) callback :remove remove))
 
 
+;;; This is different from the Python version because we don't
+;;;   have the traitlet change[xxx] dictionary
+;;;   Accept the slot-name and new value
+(defmethod traitlets:notify-change ((widget widget) slotd new-value old)
+  (when *send-updates*
+    (when (and (comm widget) (assoc (clos:slot-definition-name slotd) (key-map widget)))
+      (when (%should-send-property widget (clos:slot-definition-name slotd) new-value)
+        (send-state widget :key (clos:slot-definition-name slotd))))
+    (call-next-method)))

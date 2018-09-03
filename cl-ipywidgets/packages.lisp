@@ -3,6 +3,7 @@
   (:nicknames #:cljw)
   (:use #:cl)
   (:shadow #:step #:min #:max)
+  (:import-from :fredokun-utilities #:[] #:[]-contains)
   (:export
    #:*send-updates*
    #:ipython-display
@@ -77,4 +78,5 @@
   (:use #:cl)
   (:export #:traitlet-class #:synced-object)
   (:export #:traitlet-metadata
+           #:notify-change
 	   #:effective-traitlet))

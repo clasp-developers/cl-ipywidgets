@@ -76,7 +76,7 @@
         content: dict
             Content of the msg."
   (declare (ignore dummy))
-  (when (string= (fredo-utils:[] content "event" "") "click")
+  (when (string= ([] content "event" "") "click")
     (do-call (click-handlers self) self))
   (values))
 
