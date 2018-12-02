@@ -481,8 +481,7 @@ buffers : list  - A list of binary buffers "
 	 (method  ([] data "method" :not-found))
          state)
     (when (eq method :not-found)
-      (error "An empty data dict was received from Python - why???? content is ~s"
-             content))
+      (warn "!~%!~%!~%!~%!~%!~%!~%!~%!~%!~%!~%!~%!~%!~% An empty data dict was received from Python - why???? content is ~s~%!~%!~%!~%!~%!~%!~%!~%!~%!~%!~%" content))
     (cond
       ((string= method "update")
        (cl-jupyter:logg 2 "method update  data -> ~S~%" data)
