@@ -71,6 +71,7 @@
    #:password
    #:save-jupyter-cell-state
    #:in-jupyter-cell
+   #:*kernel-start-callbacks*
    )
   (:import-from :fredokun-utilities #:[] #:[]-contains))
 

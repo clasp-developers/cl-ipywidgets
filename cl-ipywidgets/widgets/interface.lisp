@@ -1,13 +1,18 @@
 (in-package #:cl-ipywidgets)
 
 
+(defparameter *kernel-start-callbacks* nil
+  "Push into this list thunks that get called when the kernel starts")
+
 (defun kernel-start-hook (kernel)
   (cl-jupyter:logg 2 "In kernel-start-hook kernel -> ~a~%" kernel)
   (let ((comm-manager (cl-ipykernel:make-comm-manager kernel)))
     (cl-jupyter:logg 2 "Just did make-comm-manager~%")
     (setf (gethash kernel cl-ipykernel:*kernel-comm-managers*) comm-manager)
     (cl-jupyter:logg 2 "register-target for kernel: ~a~%" kernel)
-    (cl-ipykernel:register-target comm-manager "jupyter.widget" #'handle-comm-open)))
+    (cl-ipykernel:register-target comm-manager "jupyter.widget" #'handle-comm-open)
+    (loop for start-callback in *kernel-start-callbacks*
+          do (funcall start-callback))))
 
 (defun kernel-shutdown-hook (kernel)
   (cl-jupyter:logg 2 "In kernel-shutdown-hook kernel -> ~a~%" kernel)
@@ -76,22 +81,24 @@
         do (kernel-start-hook kernel)))
 
 (defun cl-jupyter-widget-display-hook (widget iopub parent-msg execution-count key)
+  (cl-jupyter:logg 2 "Entered cl-jupyter-widget-display-hook ~%")
   (if (and widget (typep widget 'cljw:widget))
       (progn
-	(cl-jupyter:logg 1 "cl-jupyter-widget-display-hook: The widget result ~s is about to be displayed~%" widget)
+	(cl-jupyter:logg 1 "cl-jupyter-widget-display-hook: TEST The widget result ~s is about to be displayed~%" widget)
         (ipython-display widget iopub parent-msg execution-count key)
+        (cl-jupyter:logg 1 "Displayed widget~%")
         t)
     (progn
       (cl-jupyter:logg 1 "cl-jupyter-widget-display-hook: Did not recognize ~s as a widget - returning to shell~%" widget)
       nil)))
 
 (eval-when (:load-toplevel :execute)
-  (setf cl-jupyter:*kernel-start-hook* #'kernel-start-hook)
-  (setf cl-jupyter:*kernel-shutdown-hook* #'kernel-shutdown-hook)
-  (setf cl-jupyter:*handle-comm-open-hook* #'handle-comm-open)
-  (setf cl-jupyter:*handle-comm-msg-hook* #'handle-comm-msg)
-  (setf cl-jupyter:*handle-comm-close-hook* #'handle-comm-close)
-  (setf cl-jupyter:*cl-jupyter-widget-display-hook* #'cl-jupyter-widget-display-hook)
+  (setf cl-jupyter:*kernel-start-hook* 'kernel-start-hook)
+  (setf cl-jupyter:*kernel-shutdown-hook* 'kernel-shutdown-hook)
+  (setf cl-jupyter:*handle-comm-open-hook* 'handle-comm-open)
+  (setf cl-jupyter:*handle-comm-msg-hook* 'handle-comm-msg)
+  (setf cl-jupyter:*handle-comm-close-hook* 'handle-comm-close)
+  (setf cl-jupyter:*cl-jupyter-widget-display-hook* 'cl-jupyter-widget-display-hook)
   (setf cl-jupyter:*sort-encoded-json* nil))
 
 

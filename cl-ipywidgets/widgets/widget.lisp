@@ -445,7 +445,7 @@ buffers : list  - A list of binary buffers "
 
 (defmethod %ipython-display-callback ((self widget) iopub parent-msg execution-count key)
   "This is called to display the widget"
-  (cl-jupyter:logg 2 "widget::%ipython-display-callback~%")
+  (cl-jupyter:logg 2 "widget::%ipython-display-callback (view-name self) -> ~s~%" (view-name self))
   (when (view-name self)
     ;; The 'application/vnd.jupyter.widget-view+json' mimetype has not been registered yet.
     ;; See the registration process and naming convention at
