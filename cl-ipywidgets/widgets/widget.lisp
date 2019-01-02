@@ -480,9 +480,9 @@ buffers : list  - A list of binary buffers "
 	 (data    ([] content "data"))
 	 (method  ([] data "method" :not-found))
          state)
-    (when (eq method :not-found)
-      (warn "!~%!~%!~%!~%!~%!~%!~%!~%!~%!~%!~%!~%!~%!~% An empty data dict was received from Python - why???? content is ~s~%!~%!~%!~%!~%!~%!~%!~%!~%!~%!~%" content))
     (cond
+      ((eq method :not-found)
+       (warn "!~%!~%!~% An empty data dict was received from Python - why???? content is: ~%~s~%!~%!~%!~%" content)) 
       ((string= method "update")
        (cl-jupyter:logg 2 "method update  data -> ~S~%" data)
        (when ([]-contains  data "state")
@@ -505,7 +505,7 @@ buffers : list  - A list of binary buffers "
 			    ([] data "content")
 			    (cl-jupyter:message-buffers msg))))
       (t (cl-jupyter:logg 2 "method unknown!!~%")
-	 (cl-jupyter:logg-backtrace "Unknown front-end to back-end widget msg with method |~s|" method)))))
+	 (cl-jupyter:logg-backtrace "Unknown front-end to back-end widget msg with method |~s|~%" method)))))
 
 (defun handle-custom-msg (widget content buffers)
   (cl-jupyter:logg 2 "In handle-custom-msg   content -> ~s  buffers -> ~s~%" content buffers)
