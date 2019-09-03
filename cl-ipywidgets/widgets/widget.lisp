@@ -367,20 +367,21 @@ Return T if equal, NIL if unequal"
   (cl-jupyter:logg 2 "In check-*send-updates* *send-updates*-> ~a~%" *send-updates*)
   *send-updates*)
 
-(defmethod initialize-instance :around ((w widget) &rest initargs)
+(defmethod initialize-instance :around ((widg widget) &rest initargs)
   (cl-jupyter:logg 2 "widget.lisp initialize-instance initargs: ~a~%" initargs)
   (unwind-protect
        (let* ((*send-updates* nil) ; suppress sending updates to browser when initializing
-	      (w (progn
-		   (check-*send-updates*)
-		   (cl-jupyter:logg 2 ">>>>   Suppressing sending updates to browser  *send-updates* -> ~a~%" *send-updates*)
-		   (call-next-method))))
-	 (setf (key-map w) (get-key-map w))
-	 (call-widget-constructed w)
+	      (widg (progn
+		      (check-*send-updates*)
+		      (cl-jupyter:logg 2 ">>>>   Suppressing sending updates to browser  *send-updates* -> ~a~%" *send-updates*)
+		      (call-next-method))))
+	 (setf (key-map widg) (get-key-map widg))
+	 (call-widget-constructed widg)
 	 (prog1
-	     (widget-open w)
+	     (widget-open widg)
 	   (cl-jupyter:logg 2 "widget.lisp initialize-instance done *send-updates* -> ~a~%" *send-updates*)))
-    (cl-jupyter:logg 2 "<<<< Leaving *send-updates* ~a context~%" *send-updates*)))
+    (cl-jupyter:logg 2 "<<<< Leaving *send-updates* ~a context~%" *send-updates*))
+  widg)
 
 (defvar *print-widget-backtrace* nil)
 
@@ -401,7 +402,7 @@ Return T if equal, NIL if unequal"
       (when (model-id self)
 	(setf (getf kwargs :comm-id) (model-id self)))
       (setf (comm self) (apply #'cl-ipykernel:comm.__init__ kwargs))
-      (cl-jupyter:logg 2 "    creating comm -> ~s~%" (comm self)))))
+      self)))
 
 (defun binary-types-p (obj)
   ;;; In python this test is
